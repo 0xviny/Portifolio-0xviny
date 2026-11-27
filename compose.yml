@@ -30,6 +30,12 @@ services:
 
       - "traefik.http.services.vinicius-site.loadbalancer.server.port=80"
 
+      - "traefik.http.routers.webmail-0xviny.rule=Host(`webmail.0xviny.com.br`)"
+      - "traefik.http.routers.webmail-0xviny.entrypoints=websecure"
+      - "traefik.http.routers.webmail-0xviny.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.webmail-0xviny.service=webmail-0xviny"
+      - "traefik.http.services.webmail-0xviny.loadbalancer.server.url=http://amandagdesigner-webmail:80"
+
 networks:
   proxy:
     external: true
