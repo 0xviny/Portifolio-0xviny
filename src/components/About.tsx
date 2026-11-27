@@ -35,15 +35,13 @@ export default function About() {
           <Reveal delay={0.15} className="border-t hairline lg:border-t-0 lg:border-l lg:pl-12">
             <div className="mb-10 w-full max-w-76">
               <img
-                src={`${import.meta.env.BASE_URL}vinicius-gabriel-retrato.jpg`}
-                srcSet={`${import.meta.env.BASE_URL}vinicius-gabriel-retrato-400.jpg 400w, ${import.meta.env.BASE_URL}vinicius-gabriel-retrato.jpg 640w`}
-                sizes="(min-width: 1024px) 304px, calc(100vw - 40px)"
-                alt="Retrato de Vinicius Gabriel, desenvolvedor full stack"
-                width={640}
-                height={640}
+                src={`${import.meta.env.BASE_URL}eu.png`}
+                alt="Vinicius Gabriel, desenvolvedor full stack"
+                width={1086}
+                height={1448}
                 loading="lazy"
                 decoding="async"
-                className="aspect-square w-full rounded-full border hairline object-cover transition-transform duration-500 ease-out hover:scale-[1.03]"
+                className="w-full rounded-xl border hairline transition-transform duration-500 ease-out hover:scale-[1.02]"
               />
             </div>
             <dl className="grid grid-cols-2 gap-px overflow-hidden bg-line/60">

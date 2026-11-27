@@ -53,39 +53,30 @@ export const stackGroups = [
 export const projects = [
   {
     year: "2026",
-    name: "Nimbus Fleet",
-    kind: "SaaS logística",
+    name: "LifeLine",
+    kind: "Sistema de lifecycle para aplicações Node.js",
     description:
-      "Painel de gestão de frota com telemetria em tempo real, motoristas e rotas otimizadas. API em Laravel com filas Redis e front React.",
-    stack: ["Laravel", "PostgreSQL", "React", "Redis"],
-    href: "#",
+      "Gerenciamento de ciclo de vida para aplicações Node.js: inicialização sequencial de recursos, rollback em caso de falha e encerramento ordenado, com dependências entre recursos e um contrato de erros explícito.",
+    stack: ["JavaScript", "TypeScript", "Node.js"],
+    href: "https://github.com/lifeline-js-org/lifeline-js",
+  },
+  {
+    year: "2026",
+    name: "Azura.js",
+    kind: "TypeScript Framework",
+    description:
+      "Framework TypeScript para aplicações web modernas, com renderização no servidor, roteamento, gerenciamento de estado e integração com APIs REST.",
+    stack: ["TypeScript", "JavaScript", "Node.js"],
+    href: "https://github.com/azurajs/azura",
   },
   {
     year: "2025",
-    name: "Raiz Analytics",
-    kind: "Dashboard financeiro",
-    description:
-      "Consolidação de recebíveis de pequenos negócios com relatórios exportáveis e alertas por e-mail.",
-    stack: ["PHP", "PostgreSQL", "TypeScript", "Charts"],
-    href: "#",
-  },
-  {
-    year: "2025",
-    name: "Estúdio Órbita",
+    name: "Educa Dashboard",
     kind: "Site institucional",
     description:
-      "Site de estúdio de design com animações coordenadas em GSAP e CMS em Laravel para o time atualizar conteúdo.",
-    stack: ["Laravel", "GSAP", "Tailwind"],
-    href: "#",
-  },
-  {
-    year: "2024",
-    name: "Cacto Tasks",
-    kind: "Productividade",
-    description:
-      "Gerenciador de tarefas offline-first com sync em background e atalhos de teclado em tudo.",
-    stack: ["React", "IndexedDB", "TypeScript"],
-    href: "#",
+      "Sistema para gerenciamento de advertências e manuseios de equipamentos de informática para escolas.",
+    stack: ["TypeScript", "React", "Tailwind CSS", "Next.js", "PostgreSQL"],
+    href: "https://github.com/0xviny/educa-dashboard",
   },
 ] as const;
 
@@ -133,7 +124,11 @@ export const education = [
 export const certificates = [
   { name: "Curso de PHP Moderno", issuer: "Curso em Video", year: "2026" },
   { name: "Fundamentos do PHP", issuer: "Rocketseat", year: "2026" },
-  { name: "Laravel: dos fundamentos à prática em projetos reais", issuer: "Rocketseat", year: "2026" },
+  {
+    name: "Laravel: dos fundamentos à prática em projetos reais",
+    issuer: "Rocketseat",
+    year: "2026",
+  },
   { name: "NLW Operator - Fullstack", issuer: "Rocketseat", year: "2026" },
   { name: "Curso Online de PHP", issuer: "Rocketseat", year: "2024" },
   { name: "NLW Pocket: JavaScript - Fullstack Intermediário", issuer: "Rocketseat", year: "2024" },

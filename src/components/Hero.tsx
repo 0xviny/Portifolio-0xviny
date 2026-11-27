@@ -42,7 +42,7 @@ export default function Hero() {
   return (
     <section
       ref={root}
-      className="relative flex min-h-svh flex-col justify-end pt-28 pb-10"
+      className="relative flex flex-col justify-center pt-24 pb-14 md:min-h-svh md:justify-end md:pt-28 md:pb-10"
       aria-label="Apresentação"
     >
       <CursorGlow />
