@@ -1,7 +1,7 @@
 name: 0xviny
 
 services:
- site:
+  site:
     container_name: 0xviny-site
     build:
       context: .
@@ -35,57 +35,12 @@ services:
     image: neilpang/acme.sh:latest
     restart: unless-stopped
     entrypoint: /bin/sh
-    command:
-      - -c
-      - |
-        set -u
-        DOMAIN=mail.0xviny.com.br
-        ACME_HOME=/acme-home
-        mkdir -p "$$ACME_HOME"
-
-        # O home do acme.sh nesta imagem é /acme.sh, que fica só na camada do
-        # container e se perde a cada recreação. Forçamos o nosso, no volume.
-        acme() { acme.sh --home "$$ACME_HOME" "$@"; }
-
-        # SEM --ecc: o certificado é RSA (2048). Com --ecc o acme.sh procura a
-        # pasta "<dominio>_ecc" e não acha.
-        install_cert() {
-          acme --install-cert -d "$$DOMAIN" \
-            --cert-file /certs/cert.pem \
-            --key-file /certs/key.pem \
-            --fullchain-file /certs/fullchain.pem
-        }
-
-        has_cert() {
-          acme --list 2>/dev/null | grep -q "$$DOMAIN"
-        }
-
-        while true; do
-          if [ ! -f /certs/fullchain.pem ]; then
-            if ! has_cert; then
-              echo "Emitindo certificado de $$DOMAIN via DNS-01 (Cloudflare)..."
-              acme --issue --dns dns_cf -d "$$DOMAIN" --keylength 2048 \
-                --server letsencrypt || true
-            fi
-
-            if has_cert && install_cert; then
-              echo "Certificado pronto. Checando renovação a cada 12h..."
-            else
-              echo "Ainda sem certificado em /certs. Nova tentativa em 15 minutos."
-              sleep 900
-              continue
-            fi
-          else
-            install_cert || true
-            acme --cron || true
-          fi
-
-          sleep 43200
-        done
+    command: ["/scripts/certs.sh"]
     environment:
       - CF_Token=${CF_API_TOKEN:-}
       - CF_Zone_Name=0xviny.com.br
     volumes:
+      - ./mail/certs.sh:/scripts/certs.sh:ro
       - acme-home:/acme-home
       - mail-certs:/certs
     healthcheck:
