@@ -7,4 +7,3 @@ dist
 # não precisa entrar na imagem de build
 .github
 scripts
-mail
