@@ -1,0 +1,186 @@
+name: 0xviny
+
+services:
+ site:
+    container_name: 0xviny-site
+    build:
+      context: .
+      args:
+        VITE_WEB3FORMS_ACCESS_KEY: ${VITE_WEB3FORMS_ACCESS_KEY:-}
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+
+      - "traefik.http.routers.vinicius-site.rule=Host(`0xviny.com.br`)"
+      - "traefik.http.routers.vinicius-site.entrypoints=websecure"
+      - "traefik.http.routers.vinicius-site.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.vinicius-site.service=vinicius-site"
+
+      - "traefik.http.routers.vinicius-site-www.rule=Host(`www.0xviny.com.br`)"
+      - "traefik.http.routers.vinicius-site-www.entrypoints=websecure"
+      - "traefik.http.routers.vinicius-site-www.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.vinicius-site-www.middlewares=www-redirect"
+      - "traefik.http.routers.vinicius-site-www.service=vinicius-site"
+      - "traefik.http.middlewares.www-redirect.redirectregex.regex=^https://www\\.(.*)$$"
+      - "traefik.http.middlewares.www-redirect.redirectregex.replacement=https://$$1"
+      - "traefik.http.middlewares.www-redirect.redirectregex.permanent=true"
+
+      - "traefik.http.services.vinicius-site.loadbalancer.server.port=80"
+
+  certs:
+    container_name: 0xviny-mail-certs
+    image: neilpang/acme.sh:latest
+    restart: unless-stopped
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        set -u
+        DOMAIN=mail.0xviny.com.br
+        ACME_HOME=/acme-home
+        mkdir -p "$$ACME_HOME"
+
+        # O home do acme.sh nesta imagem é /acme.sh, que fica só na camada do
+        # container e se perde a cada recreação. Forçamos o nosso, no volume.
+        acme() { acme.sh --home "$$ACME_HOME" "$@"; }
+
+        # SEM --ecc: o certificado é RSA (2048). Com --ecc o acme.sh procura a
+        # pasta "<dominio>_ecc" e não acha.
+        install_cert() {
+          acme --install-cert -d "$$DOMAIN" \
+            --cert-file /certs/cert.pem \
+            --key-file /certs/key.pem \
+            --fullchain-file /certs/fullchain.pem
+        }
+
+        has_cert() {
+          acme --list 2>/dev/null | grep -q "$$DOMAIN"
+        }
+
+        while true; do
+          if [ ! -f /certs/fullchain.pem ]; then
+            if ! has_cert; then
+              echo "Emitindo certificado de $$DOMAIN via DNS-01 (Cloudflare)..."
+              acme --issue --dns dns_cf -d "$$DOMAIN" --keylength 2048 \
+                --server letsencrypt || true
+            fi
+
+            if has_cert && install_cert; then
+              echo "Certificado pronto. Checando renovação a cada 12h..."
+            else
+              echo "Ainda sem certificado em /certs. Nova tentativa em 15 minutos."
+              sleep 900
+              continue
+            fi
+          else
+            install_cert || true
+            acme --cron || true
+          fi
+
+          sleep 43200
+        done
+    environment:
+      - CF_Token=${CF_API_TOKEN:-}
+      - CF_Zone_Name=0xviny.com.br
+    volumes:
+      - acme-home:/acme-home
+      - mail-certs:/certs
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /certs/fullchain.pem"]
+      interval: 10s
+      timeout: 5s
+      retries: 60
+    networks:
+      - outbound
+
+  mail:
+    container_name: 0xviny-mail
+    image: ghcr.io/docker-mailserver/docker-mailserver:latest
+    hostname: mail.0xviny.com.br
+    restart: unless-stopped
+    depends_on:
+      certs:
+        condition: service_healthy
+    environment:
+      - DMS_TRUSTED_NETWORKS=172.16.0.0/12,192.168.0.0/16,fc00::/7
+      - PERMIT_DOCKER=network
+      - SSL_TYPE=manual
+      - SSL_CERT_PATH=/certs/fullchain.pem
+      - SSL_KEY_PATH=/certs/key.pem
+      - TLS_LEVEL=intermediate
+      - ENABLE_RSPAMD=0
+      - ENABLE_OPENDKIM=1
+      - ENABLE_OPENDMARC=1
+      - ENABLE_POLICYD_SPF=1
+      - ENABLE_AMAVIS=0
+      - ENABLE_CLAMAV=0
+      - ENABLE_SPAMASSASSIN=0
+      - ENABLE_FAIL2BAN=0
+      - ENABLE_POSTGREY=0
+      - ENABLE_SASLAUTHD=0
+      - POSTMASTER_ADDRESS=postmaster@0xviny.com.br
+    volumes:
+      - mail-data:/var/mail
+      - mail-state:/var/mail-state
+      - mail-config:/tmp/docker-mailserver
+      - ./mail/user-patches.sh:/tmp/docker-mailserver/user-patches.sh:ro
+      - mail-certs:/certs
+    ports:
+      - "25:25"
+      - "465:465"
+      - "587:587"
+      - "993:993"
+    networks:
+      backend:
+        aliases:
+          - mail.0xviny.com.br
+      outbound:
+
+  webmail:
+    container_name: 0xviny-webmail
+    image: roundcube/roundcubemail:latest
+    restart: unless-stopped
+    depends_on:
+      - mail
+    environment:
+      ROUNDCUBEMAIL_DEFAULT_HOST: ssl://mail.0xviny.com.br
+      ROUNDCUBEMAIL_DEFAULT_PORT: "993"
+      ROUNDCUBEMAIL_SMTP_SERVER: ssl://mail.0xviny.com.br
+      ROUNDCUBEMAIL_SMTP_PORT: "465"
+      ROUNDCUBEMAIL_USERNAME_DOMAIN: 0xviny.com.br
+      ROUNDCUBEMAIL_DB_TYPE: sqlite
+      ROUNDCUBEMAIL_SKIN: elastic
+      ROUNDCUBEMAIL_UPLOAD_MAX_FILESIZE: 10M
+    volumes:
+      - webmail-db:/var/roundcube/db
+    networks:
+      - proxy
+      - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+
+      - "traefik.http.routers.webmail-0xviny.rule=Host(`webmail.0xviny.com.br`)"
+      - "traefik.http.routers.webmail-0xviny.entrypoints=websecure"
+      - "traefik.http.routers.webmail-0xviny.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.webmail-0xviny.service=webmail-0xviny"
+
+      - "traefik.http.services.webmail-0xviny.loadbalancer.server.port=80"
+
+networks:
+  proxy:
+    external: true
+  backend:
+    internal: true
+  outbound:
+
+volumes:
+  mail-data:
+  mail-state:
+  mail-config:
+  mail-certs:
+  acme-home:
+  webmail-db:

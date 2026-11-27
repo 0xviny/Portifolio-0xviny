@@ -1,0 +1,32 @@
+﻿name: Deploy Site
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            set -e
+            cd /opt/projects/0xviny
+            git pull origin main
+            docker compose up -d --build
+
+            echo "== docker compose ps =="
+            docker compose ps
+
+            echo "== teste do container (nginx responde?) =="
+            docker compose exec -T site wget -q -O /dev/null http://127.0.0.1/ \
+              && echo "site OK" || { echo "site FALHOU"; docker compose logs --tail=80 site; exit 1; }
