@@ -61,7 +61,7 @@ export default function Statement() {
   return (
     <section aria-label="Como eu trabalho" className="py-20 md:py-28">
       <div className="wrap">
-        <div ref={root} className="max-w-[62rem]">
+        <div ref={root} className="max-w-248">
           <span className="tick" aria-hidden="true" />
           <p className="mt-6 font-display text-[clamp(1.75rem,4vw,3.5rem)] leading-[1.1] tracking-[-0.02em]">
             {words.map((word, i) => (

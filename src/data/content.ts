@@ -34,7 +34,7 @@ export const statement = {
 export const socials = [
   { label: "GitHub", href: "https://github.com/0xviny" },
   { label: "LinkedIn", href: "" },
-  { label: "Instagram", href: "https://www.instagram.com/0xviny" },
+  { label: "Instagram", href: "https://www.instagram.com/0xviny.dev" },
 ] as const;
 
 export const sections = [
