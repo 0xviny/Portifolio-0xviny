@@ -1,23 +1,35 @@
-import Reveal from "./Reveal";
-
 export default function SectionHeading({
-  index,
   title,
   hint,
+  tone = "paper",
 }: {
-  index: string;
   title: string;
   hint?: string;
+  tone?: "paper" | "deep";
 }) {
+  const deep = tone === "deep";
+
   return (
-    <Reveal className="mb-12 flex flex-col gap-4 border-b hairline pb-6 md:mb-16 md:flex-row md:items-end md:justify-between">
-      <div className="flex items-baseline gap-5">
-        <span className="label text-moss-bright">{index}</span>
-        <h2 className="text-4xl leading-[0.95] font-semibold tracking-tight text-bone md:text-6xl">
+    <div className="mb-10 md:mb-14">
+      <span className={`tick ${deep ? "bg-paper" : ""}`} aria-hidden="true" />
+      <div className="mt-5 flex flex-col gap-2 md:flex-row md:items-baseline md:justify-between md:gap-10">
+        <h2
+          className={`text-[clamp(2rem,3.6vw,3.25rem)] leading-[1.05] ${
+            deep ? "text-paper" : "text-ink"
+          }`}
+        >
           {title}
         </h2>
+        {hint && (
+          <p
+            className={`max-w-xs text-[15px] leading-snug md:text-right ${
+              deep ? "text-navy-muted" : "text-muted"
+            }`}
+          >
+            {hint}
+          </p>
+        )}
       </div>
-      {hint && <p className="label max-w-xs md:text-right">{hint}</p>}
-    </Reveal>
+    </div>
   );
 }

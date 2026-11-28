@@ -27,3 +27,7 @@ dist-ssr
 .env.*
 !.env.example
 
+
+# caches de ferramentas (o Tailwind escaneia o projeto inteiro)
+.taste-skill/
+

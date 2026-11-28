@@ -1,15 +1,13 @@
 import { useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import SectionHeading from "./SectionHeading";
-import Reveal from "./Reveal";
-import { profile } from "../data/content";
+import { profile, socials } from "../data/content";
 
 type Status = "idle" | "sending" | "ok" | "error";
 
 const fields = [
   { name: "name", label: "Nome", type: "text", placeholder: "Como devo te chamar" },
   { name: "email", label: "E-mail", type: "email", placeholder: "voce@empresa.com" },
-  { name: "subject", label: "Assunto", type: "text", placeholder: "Projeto, vaga, parceria…" },
+  { name: "subject", label: "Assunto", type: "text", placeholder: "Projeto, vaga ou parceria" },
 ] as const;
 
 export default function Contact() {
@@ -63,128 +61,147 @@ export default function Contact() {
   return (
     <section
       id="contato"
-      className="bg-ember scroll-mt-20 border-t hairline py-24 md:py-32"
+      className="on-night scroll-mt-20 bg-night pt-20 pb-16 text-night-ink md:pt-28 md:pb-20"
       aria-labelledby="contato-title"
     >
-      <div className="mx-auto w-full max-w-350 px-5 md:px-10">
-        <span id="contato-title" className="sr-only">
-          Contato
-        </span>
-        <SectionHeading index="06" title="Contato" hint="resposta em até 24h úteis" />
+      <div className="wrap">
+        <div className="mb-10 md:mb-14">
+          <span className="tick" aria-hidden="true" />
+          <div className="mt-5 flex flex-col gap-2 md:flex-row md:items-baseline md:justify-between md:gap-10">
+            <h2 id="contato-title" className="text-[clamp(2rem,3.6vw,3.25rem)] leading-[1.05]">
+              Contato
+            </h2>
+            <p className="text-[15px] text-night-muted md:text-right">
+              resposta em até 24h úteis
+            </p>
+          </div>
+        </div>
 
-        <div className="grid gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
-          <Reveal className="space-y-8">
-            <p className="text-balance text-2xl leading-snug font-medium tracking-tight md:text-3xl">
+        <div className="grid gap-12 lg:grid-cols-12 lg:gap-6">
+          <div className="lg:col-span-5">
+            <p className="font-display text-[clamp(1.625rem,2.7vw,2.375rem)] leading-[1.24] tracking-[-0.01em] text-night-ink">
               Tem um projeto, uma vaga ou só uma dúvida difícil? Escreve aí.
             </p>
-            <div className="space-y-4">
-              <a
-                href={`mailto:${profile.email}`}
-                className="inline-flex min-h-11 items-center font-mono text-sm text-moss-bright underline decoration-moss-mid underline-offset-4 transition-colors hover:text-bone break-all"
-              >
-                {profile.email}
-              </a>
-              <p className="label">{profile.location}</p>
-            </div>
-            <div className="border-t hairline pt-6">
-              <p className="max-w-sm text-sm leading-relaxed text-ash">
-                Mensagens passam por proteção anti-spam e chegam direto em contato@0xviny.com.br —
-                sem cadastro, sem newsletter e sem repasse para terceiros.
-              </p>
-            </div>
-          </Reveal>
 
-          <Reveal delay={0.1}>
-            <form onSubmit={handleSubmit} noValidate={false} className="space-y-6">
-              {/* honeypot — invisible to humans, ignored by the Web3Forms */}
-              <input
-                type="text"
-                name="honeypot"
-                tabIndex={-1}
-                autoComplete="off"
-                aria-hidden="true"
-                className="absolute left-[-9999px] h-px w-px opacity-0"
-              />
+            <a
+              href={`mailto:${profile.email}`}
+              className="mt-9 inline-flex min-h-11 items-center text-[clamp(1.125rem,1.6vw,1.375rem)] text-night-ink underline decoration-night-muted decoration-1 underline-offset-[6px] transition-colors hover:decoration-night-ink break-all"
+            >
+              {profile.email}
+            </a>
+            <p className="mt-3 text-[15px] text-night-muted">{profile.location}</p>
 
-              <div className="grid gap-6 sm:grid-cols-2">
-                {fields.map((field, i) => (
-                  <div key={field.name} className={i === 2 ? "sm:col-span-2" : ""}>
-                    <label htmlFor={field.name} className="label mb-2 block">
-                      {field.label}
-                    </label>
-                    <input
-                      id={field.name}
-                      name={field.name}
-                      type={field.type}
-                      required
-                      minLength={2}
-                      maxLength={field.name === "email" ? 190 : 120}
-                      placeholder={field.placeholder}
-                      disabled={status === "sending"}
-                      className="w-full border-b hairline bg-transparent py-3 text-bone placeholder:text-ash/50 transition-colors focus:border-moss-bright focus:outline-none disabled:opacity-50"
-                    />
-                  </div>
-                ))}
-                <div className="sm:col-span-2">
-                  <label htmlFor="message" className="label mb-2 block">
-                    Mensagem
+            {socials.some((s) => s.href) && (
+              <ul className="mt-8 flex flex-wrap gap-3">
+                {socials
+                  .filter((s) => s.href)
+                  .map((s) => (
+                    <li key={s.label}>
+                      <a
+                        href={s.href}
+                        target="_blank"
+                        rel="me noreferrer noopener"
+                        className="inline-flex min-h-11 items-center rounded-lg border border-night-line px-4 text-[14px] text-night-muted transition-colors hover:border-night-muted hover:text-night-ink"
+                      >
+                        {s.label}
+                      </a>
+                    </li>
+                  ))}
+              </ul>
+            )}
+
+            <p className="mt-8 max-w-sm text-[15px] leading-[1.65] text-night-muted">
+              Mensagens passam por proteção anti-spam e chegam direto no meu e-mail, sem cadastro,
+              sem newsletter e sem repasse para terceiros.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} noValidate={false} className="space-y-5 lg:col-span-6 lg:col-start-7">
+            {/* honeypot — invisível para humanos, ignorado pelo Web3Forms */}
+            <input
+              type="text"
+              name="honeypot"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              className="absolute left-[-9999px] h-px w-px opacity-0"
+            />
+
+            <div className="grid gap-5 sm:grid-cols-2">
+              {fields.map((field, i) => (
+                <div key={field.name} className={i === 2 ? "sm:col-span-2" : ""}>
+                  <label htmlFor={field.name} className="mb-2 block text-[14px] text-night-muted">
+                    {field.label}
                   </label>
-                  <textarea
-                    id="message"
-                    name="message"
+                  <input
+                    id={field.name}
+                    name={field.name}
+                    type={field.type}
                     required
-                    minLength={10}
-                    maxLength={4000}
-                    rows={5}
+                    minLength={2}
+                    maxLength={field.name === "email" ? 190 : 120}
+                    placeholder={field.placeholder}
                     disabled={status === "sending"}
-                    placeholder="Conta um pouco sobre o que você precisa…"
-                    className="w-full resize-y border-b hairline bg-transparent py-3 text-bone placeholder:text-ash/50 transition-colors focus:border-moss-bright focus:outline-none disabled:opacity-50"
+                    className="w-full rounded-lg bg-night-surface px-4 py-3.5 text-[16px] text-night-ink transition-shadow placeholder:text-night-muted/70 focus:outline-none focus:ring-2 focus:ring-night-ink/60 disabled:opacity-50"
                   />
                 </div>
-              </div>
+              ))}
+            </div>
 
-              <div className="flex flex-wrap items-center gap-5">
-                <button
-                  type="submit"
-                  disabled={status === "sending" || status === "ok"}
-                  className="border border-moss-mid bg-moss/40 px-8 py-3.5 font-mono text-xs tracking-[0.16em] text-bone uppercase transition-all hover:bg-moss disabled:cursor-not-allowed disabled:opacity-50 md:text-[11px]"
-                >
-                  {status === "sending"
-                    ? "Enviando…"
-                    : status === "ok"
-                      ? "Enviado ✓"
-                      : "Enviar mensagem"}
-                </button>
+            <div>
+              <label htmlFor="message" className="mb-2 block text-[14px] text-night-muted">
+                Mensagem
+              </label>
+              <textarea
+                id="message"
+                name="message"
+                required
+                minLength={10}
+                maxLength={4000}
+                rows={5}
+                disabled={status === "sending"}
+                placeholder="Conta um pouco sobre o que você precisa"
+                className="w-full resize-y rounded-lg bg-night-surface px-4 py-3.5 text-[16px] text-night-ink transition-shadow placeholder:text-night-muted/70 focus:outline-none focus:ring-2 focus:ring-night-ink/60 disabled:opacity-50"
+              />
+            </div>
 
-                <AnimatePresence mode="wait">
-                  {status === "ok" && (
-                    <motion.p
-                      key="ok"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      role="status"
-                      className="font-mono text-xs tracking-[0.12em] text-moss-bright uppercase md:text-[11px]"
-                    >
-                      Mensagem recebida. Em breve retorno.
-                    </motion.p>
-                  )}
-                  {status === "error" && (
-                    <motion.p
-                      key="error"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      role="alert"
-                      className="max-w-xs font-mono text-xs tracking-[0.12em] text-red-400 uppercase md:text-[11px]"
-                    >
-                      {error}
-                    </motion.p>
-                  )}
-                </AnimatePresence>
-              </div>
-            </form>
-          </Reveal>
+            <div className="flex flex-wrap items-center gap-5 pt-1">
+              <button type="submit" disabled={status === "sending" || status === "ok"} className="btn btn-primary">
+                {status === "sending"
+                  ? "Enviando…"
+                  : status === "ok"
+                    ? "Enviado ✓"
+                    : "Enviar mensagem"}
+              </button>
+
+              <AnimatePresence mode="wait">
+                {status === "ok" && (
+                  <motion.p
+                    key="ok"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    role="status"
+                    className="text-[14px] text-night-ink"
+                  >
+                    Mensagem recebida. Em breve retorno.
+                  </motion.p>
+                )}
+                {status === "error" && (
+                  <motion.p
+                    key="error"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    role="alert"
+                    className="max-w-xs text-[14px] text-alarm"
+                  >
+                    {error}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </div>
+          </form>
         </div>
       </div>
     </section>

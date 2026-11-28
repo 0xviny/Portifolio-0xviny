@@ -1,112 +1,113 @@
-import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import BubbleField from "./BubbleField";
-import CursorGlow from "./CursorGlow";
+import { motion, useReducedMotion } from "motion/react";
 import { profile } from "../data/content";
 
-const lines = ["Full", "Stack", "Developer"];
+const lines = ["Desenvolvedor", "Full Stack"];
+const EASE = [0.16, 1, 0.3, 1] as const;
 
 export default function Hero() {
-  const root = useRef<HTMLElement>(null);
+  const reduced = useReducedMotion();
 
-  useEffect(() => {
-    const el = root.current;
-    if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  // entrada única ao carregar; com movimento reduzido tudo já nasce no lugar
+  const rise = (delay = 0) =>
+    reduced
+      ? { initial: false as const, animate: { yPercent: 0 } }
+      : {
+          initial: { yPercent: 112 },
+          animate: { yPercent: 0 },
+          transition: { duration: 1, delay, ease: EASE },
+        };
 
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
-
-      tl.fromTo(
-        "[data-hero-line]",
-        { yPercent: 115, rotate: 4 },
-        { yPercent: 0, rotate: 0, duration: 1.1, stagger: 0.09 },
-      )
-        .fromTo(
-          "[data-hero-meta]",
-          { opacity: 0, y: 18 },
-          { opacity: 1, y: 0, duration: 0.7, stagger: 0.08 },
-          "-=0.55",
-        )
-        .fromTo(
-          "[data-hero-rule]",
-          { scaleX: 0 },
-          { scaleX: 1, duration: 1.2, transformOrigin: "left center" },
-          "-=0.6",
-        );
-    }, el);
-
-    return () => ctx.revert();
-  }, []);
+  const fade = (delay = 0, y = 16) =>
+    reduced
+      ? { initial: false as const, animate: { opacity: 1, y: 0 } }
+      : {
+          initial: { opacity: 0, y },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: 0.75, delay, ease: EASE },
+        };
 
   return (
     <section
-      ref={root}
-      className="relative flex flex-col justify-center pt-24 pb-14 md:min-h-svh md:justify-end md:pt-28 md:pb-10"
+      id="top"
+      className="flex min-h-[100svh] flex-col pt-24 pb-16 md:pt-28 md:pb-28"
       aria-label="Apresentação"
     >
-      <CursorGlow />
-      <BubbleField />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(120%_90%_at_50%_120%,rgba(5,7,6,0)_40%,rgba(5,7,6,0.85)_100%)]"
-      />
-      <div className="relative mx-auto w-full max-w-350 px-5 md:px-10">
-        <div className="mb-8 flex flex-wrap items-center gap-x-6 gap-y-2" data-hero-meta>
-          <span className="flex items-center gap-2 font-mono text-xs tracking-[0.16em] text-moss-bright uppercase md:text-[11px]">
-            <span className="relative flex size-2">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-moss-bright opacity-60" />
-              <span className="relative inline-flex size-2 rounded-full bg-moss-bright" />
+      <div className="wrap flex flex-1 flex-col justify-between gap-12">
+        <div>
+          <motion.p
+            {...fade(0.05, 10)}
+            className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[15px] text-muted"
+          >
+            <span className="flex items-center gap-2">
+              <span aria-hidden="true" className="relative flex size-2">
+                <span className="absolute inline-flex size-full animate-breathe rounded-full bg-accent" />
+                <span className="relative inline-flex size-2 rounded-full bg-accent" />
+              </span>
+              {profile.availability}
             </span>
-            {profile.availability}
-          </span>
-          <span className="label">{profile.location}</span>
+            <span aria-hidden="true" className="hidden h-3 w-px bg-line sm:block" />
+            <span>{profile.location}</span>
+          </motion.p>
+
+          <h1
+            className="mt-7 text-[clamp(2.75rem,10vw,9rem)] leading-[0.94] tracking-[-0.035em] text-balance text-ink"
+            aria-label={lines.join(" ")}
+          >
+            {lines.map((line, i) => (
+              <span key={line} className="block overflow-hidden pt-[0.12em] -mt-[0.12em] pb-[0.03em]">
+                <motion.span {...rise(0.12 + i * 0.09)} className="block" aria-hidden="true">
+                  {line}
+                </motion.span>
+              </span>
+            ))}
+          </h1>
+
+          <div className="mt-10 grid gap-8 lg:grid-cols-12 lg:gap-x-6">
+            <motion.p
+              {...fade(0.4)}
+              className="max-w-[46ch] text-[17px] leading-[1.62] text-muted lg:col-span-5"
+            >
+              {profile.about.lead}
+            </motion.p>
+
+            <motion.ul
+              {...fade(0.5, 12)}
+              className="lg:col-span-5 lg:col-start-8"
+              aria-label="O que eu faço"
+            >
+              {profile.services.map((service) => (
+                <li
+                  key={service}
+                  className="flex items-center gap-3 border-t hairline py-3 text-[16px] text-ink last:border-b"
+                >
+                  <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-accent" />
+                  {service}
+                </li>
+              ))}
+            </motion.ul>
+          </div>
         </div>
 
-        <h1
-          className="text-[clamp(3.4rem,15vw,13rem)] leading-[0.82] font-semibold tracking-[-0.04em] text-bone"
-          aria-label={lines.join(" ")}
+        <motion.div
+          {...fade(0.6, 12)}
+          className="flex flex-col gap-5 border-t hairline pt-6 sm:flex-row sm:items-center sm:justify-between"
         >
-          {lines.map((line, i) => (
-            <span key={line} className="block overflow-hidden pb-[0.06em]">
-              <span
-                data-hero-line
-                className={`block ${i === 1 ? "text-moss-bright/90 italic" : ""}`}
-                aria-hidden="true"
-              >
-                {line}
-              </span>
-            </span>
-          ))}
-        </h1>
-
-        <div
-          data-hero-rule
-          className="mt-8 h-px w-full bg-linear-to-r from-moss-mid via-line to-transparent"
-        />
-
-        <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <p
-            data-hero-meta
-            className="max-w-md text-balance text-sm leading-relaxed text-ash md:text-base"
-          >
-            {profile.about.lead}
-          </p>
-          <div data-hero-meta className="flex items-center gap-4">
-            <a
-              href="#projetos"
-              className="inline-flex min-h-11 items-center border border-moss-mid bg-moss/40 px-6 py-3 font-mono text-xs tracking-[0.16em] text-bone uppercase transition-all hover:bg-moss md:text-[11px]"
-            >
+          <div className="flex flex-wrap items-center gap-4">
+            <a href="#projetos" className="btn btn-primary">
               Ver projetos
             </a>
-            <a
-              href="#contato"
-              className="inline-flex min-h-11 items-center px-2 py-3 font-mono text-xs tracking-[0.16em] text-ash uppercase underline decoration-moss-mid underline-offset-4 transition-colors hover:text-bone md:text-[11px]"
-            >
+            <a href="#contato" className="btn btn-ghost">
               Entrar em contato
             </a>
           </div>
-        </div>
+          <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[15px] text-muted">
+            <span>Respondo em até 24 horas úteis</span>
+            <span aria-hidden="true" className="hidden h-3 w-px bg-line sm:block" />
+            <a href={`mailto:${profile.email}`} className="btn-link text-ink break-all">
+              {profile.email}
+            </a>
+          </p>
+        </motion.div>
       </div>
     </section>
   );

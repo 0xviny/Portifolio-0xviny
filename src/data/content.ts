@@ -2,9 +2,14 @@ export const profile = {
   name: "Vinicius",
   fullName: "Vinicius Gabriel",
   role: "Full Stack Developer",
-  location: "Brasil · Remoto",
+  location: "Brasil, trabalho remoto",
   email: "contato@0xviny.com.br",
   availability: "Disponível para projetos",
+  services: [
+    "Back-end com Laravel e APIs REST",
+    "Front-end com React e TypeScript",
+    "Banco de dados, Docker e Nginx",
+  ],
   about: {
     lead: "Construo sistemas que começam num banco de dados bem modelado e terminam numa interface que as pessoas não esquecem.",
     body: [
@@ -20,6 +25,12 @@ export const profile = {
   },
 };
 
+/* momento tipográfico da página: uma frase que acende palavra por palavra */
+export const statement = {
+  text: "Perguntar o porquê antes de implementar e entregar menos coisas, mas afiadas.",
+  accentWord: "afiadas.",
+};
+
 export const socials = [
   { label: "GitHub", href: "https://github.com/0xviny" },
   { label: "LinkedIn", href: "" },
@@ -27,12 +38,12 @@ export const socials = [
 ] as const;
 
 export const sections = [
-  { id: "sobre", index: "01", label: "Sobre mim" },
-  { id: "stacks", index: "02", label: "Stacks" },
-  { id: "projetos", index: "03", label: "Projetos" },
-  { id: "carreira", index: "04", label: "Carreira" },
-  { id: "certificados", index: "05", label: "Certificados" },
-  { id: "contato", index: "06", label: "Contato" },
+  { id: "sobre", label: "Sobre mim" },
+  { id: "stacks", label: "Stacks" },
+  { id: "projetos", label: "Projetos" },
+  { id: "carreira", label: "Carreira" },
+  { id: "certificados", label: "Certificados" },
+  { id: "contato", label: "Contato" },
 ] as const;
 
 export const stackGroups = [

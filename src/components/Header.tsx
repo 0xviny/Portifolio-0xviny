@@ -1,17 +1,38 @@
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, type MotionValue } from "motion/react";
 import { sections, profile } from "../data/content";
 
-export default function Header() {
+function Mark({ className = "size-8" }: { className?: string }) {
+  return (
+    <span className={`grid shrink-0 place-items-center rounded-[7px] bg-ink ${className}`}>
+      <svg viewBox="0 0 64 64" aria-hidden="true" className="h-1/2 w-1/2">
+        <path
+          d="M15 17 L32 49 L49 17"
+          fill="none"
+          stroke="#e9e6e1"
+          strokeWidth="9"
+          strokeLinecap="square"
+          strokeLinejoin="miter"
+        />
+      </svg>
+    </span>
+  );
+}
+
+export default function Header({ progress }: { progress: MotionValue<number> }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<string>("");
 
   useEffect(() => {
+    const visible = new Set<string>();
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (entry.isIntersecting) setActive(entry.target.id);
+          if (entry.isIntersecting) visible.add(entry.target.id);
+          else visible.delete(entry.target.id);
         }
+        const first = sections.find((s) => visible.has(s.id));
+        setActive(first ? first.id : "");
       },
       { rootMargin: "-40% 0px -55% 0px" },
     );
@@ -29,25 +50,17 @@ export default function Header() {
     };
   }, [open]);
 
-  const go = (id: string) => {
-    setOpen(false);
-    history.replaceState(null, "", `#${id}`);
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-40 border-b hairline bg-void/70 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-350 items-center justify-between px-5 md:px-10">
+      <header className="fixed inset-x-0 top-0 z-40 border-b hairline bg-paper/85 backdrop-blur-md">
+        <div className="wrap flex h-16 items-center justify-between gap-6">
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="group flex min-h-11 min-w-11 items-center gap-3"
+            className="flex min-h-11 items-center gap-2.5"
             aria-label="Voltar ao topo"
           >
-            <span className="grid size-9 place-items-center border hairline font-mono text-sm text-moss-bright transition-colors group-hover:bg-moss">
-              V
-            </span>
-            <span className="hidden font-mono text-xs tracking-[0.2em] text-ash uppercase sm:block">
+            <img src="/vg-black.png" alt="Favicon" className="h-6 w-6" />
+            <span className="text-[15px] font-medium tracking-[-0.01em] text-ink">
               {profile.fullName}
             </span>
           </button>
@@ -57,39 +70,36 @@ export default function Header() {
               <a
                 key={s.id}
                 href={`#${s.id}`}
-                className={`relative inline-flex min-h-11 items-center px-3 py-2 font-mono text-[11px] tracking-[0.14em] uppercase transition-colors ${
-                  active === s.id ? "text-bone" : "text-ash hover:text-bone"
+                data-active={active === s.id}
+                aria-current={active === s.id ? "true" : undefined}
+                className={`nav-link inline-flex min-h-11 items-center px-3 py-2 text-[15px] transition-colors ${
+                  active === s.id ? "text-ink" : "text-muted hover:text-ink"
                 }`}
               >
-                {active === s.id && (
-                  <motion.span
-                    layoutId="nav-pill"
-                    className="absolute inset-0 -z-10 border border-moss-mid/60 bg-moss/30"
-                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
-                  />
-                )}
                 {s.label}
               </a>
             ))}
-            <a
-              href={`mailto:${profile.email}`}
-              className="ml-3 inline-flex min-h-11 items-center border border-moss-mid px-4 py-2 font-mono text-[11px] tracking-[0.14em] text-moss-bright uppercase transition-colors hover:bg-moss hover:text-bone"
-            >
+            <a href={`mailto:${profile.email}`} className="btn btn-primary ml-4 min-h-10 px-4">
               Fale comigo
             </a>
           </nav>
 
           <button
             onClick={() => setOpen(true)}
-            className="flex min-h-11 min-w-11 flex-col items-center justify-center gap-1.5 p-2 lg:hidden"
+            className="flex min-h-11 min-w-11 flex-col items-end justify-center gap-1.5 py-2 lg:hidden"
             aria-label="Abrir menu"
             aria-expanded={open}
           >
-            <span className="block h-px w-6 bg-bone" />
-            <span className="block h-px w-6 bg-bone" />
-            <span className="block h-px w-4 self-end bg-moss-bright" />
+            <span className="block h-px w-6 bg-ink" />
+            <span className="block h-px w-6 bg-ink" />
           </button>
         </div>
+
+        <motion.div
+          aria-hidden="true"
+          style={{ scaleX: progress }}
+          className="h-0.5 origin-left bg-accent"
+        />
       </header>
 
       <AnimatePresence>
@@ -99,19 +109,25 @@ export default function Header() {
             animate={{ clipPath: "inset(0 0 0% 0)" }}
             exit={{ clipPath: "inset(0 0 100% 0)" }}
             transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
-            className="fixed inset-0 z-50 flex flex-col bg-void lg:hidden"
+            className="fixed inset-0 z-50 flex flex-col bg-paper lg:hidden"
           >
-            <div className="flex h-16 items-center justify-between border-b hairline px-5">
-              <span className="label">Menu</span>
+            <div className="flex h-16 items-center justify-between px-6">
+              <span className="flex items-center gap-2.5">
+                <Mark className="size-7" />
+                <span className="text-[15px] font-medium tracking-[-0.01em]">
+                  {profile.fullName}
+                </span>
+              </span>
               <button
                 onClick={() => setOpen(false)}
-                className="grid min-h-11 min-w-11 place-items-center p-2 text-2xl leading-none"
+                className="grid min-h-11 min-w-11 place-items-center p-2 text-2xl leading-none text-muted"
                 aria-label="Fechar menu"
               >
                 ×
               </button>
             </div>
-            <nav className="flex flex-1 flex-col justify-center gap-1 px-5">
+
+            <nav className="flex flex-1 flex-col justify-center gap-1 px-6">
               {sections.map((s, i) => (
                 <motion.a
                   key={s.id}
@@ -121,20 +137,21 @@ export default function Header() {
                   transition={{ delay: 0.15 + i * 0.06, duration: 0.45 }}
                   onClick={(e) => {
                     e.preventDefault();
-                    go(s.id);
+                    setOpen(false);
+                    history.replaceState(null, "", `#${s.id}`);
+                    document
+                      .getElementById(s.id)
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" });
                   }}
-                  className="flex items-baseline gap-4 border-b hairline py-4 text-left"
+                  className="border-b hairline py-4 font-display text-[clamp(1.75rem,7vw,2.25rem)] leading-tight text-ink"
                 >
-                  <span className="label text-moss-bright">{s.index}</span>
-                  <span className="text-3xl font-medium tracking-tight">{s.label}</span>
+                  {s.label}
                 </motion.a>
               ))}
             </nav>
-            <div className="border-t hairline px-5 py-6">
-              <a
-                href={`mailto:${profile.email}`}
-                className="label inline-flex min-h-11 items-center text-moss-bright"
-              >
+
+            <div className="border-t hairline px-6 py-6">
+              <a href={`mailto:${profile.email}`} className="min-h-11 text-accent break-all">
                 {profile.email}
               </a>
             </div>
